@@ -91,6 +91,22 @@ p.sub{font-size:1.5rem;color:var(--muted);font-weight:600;margin-top:.5rem}
 @keyframes pop{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
 @keyframes throb{to{transform:scale(1.07)}}
 #confetti{position:fixed;inset:0;pointer-events:none;z-index:5;display:none}
+/* player result: winner celebration + motivation for everyone else */
+.celebrate{position:relative;padding:1rem 0 .5rem}
+.sparks{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.sparks i{position:absolute;bottom:-1.5rem;left:var(--x);font-style:normal;font-size:var(--s);opacity:0}
+.shine{background:linear-gradient(90deg,#1E6BB8,#EE7410,#86239A,#1AA394,#1E6BB8);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent}
+.scorepill{display:inline-block;margin-top:.9rem;background:var(--card);border:.15rem solid var(--line);border-radius:2rem;padding:.3rem 1.3rem;font-size:1.6rem;font-weight:800;color:var(--teal)}
+.quote{max-width:34rem;margin:1.2rem auto 0;background:var(--card);border:.12rem solid var(--line);border-left:.45rem solid var(--teal);border-radius:.9rem;padding:.9rem 1.2rem;font-size:1.5rem;font-weight:700;line-height:1.3;text-align:left}
+.quote small{display:block;margin-top:.5rem;font-size:1.05rem;color:var(--muted);font-weight:600}
+@media (prefers-reduced-motion:no-preference){
+  .trophy.bounce{animation:pop .9s .15s cubic-bezier(.2,1.6,.4,1) both,trophybounce 1.3s 1.1s ease-in-out infinite}
+  .shine{animation:shinemove 3s linear infinite}
+  .sparks i{animation:floatup 3.4s ease-in var(--d) infinite}
+}
+@keyframes trophybounce{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-.8rem) rotate(4deg)}}
+@keyframes shinemove{to{background-position:300% 0}}
+@keyframes floatup{0%{transform:translateY(0) scale(.6);opacity:0}15%{opacity:1}100%{transform:translateY(-22rem) scale(1.2);opacity:0}}
 
 /* player PC */
 .pwrap{max-width:62rem;margin:0 auto;width:100%;text-align:center}
@@ -485,9 +501,31 @@ function screenView(){
 }
 
 /* player PC */
+/* motivation for players who did not win */
+const QUOTES = [
+  'Every expert was once a beginner. Keep learning and you will get there.',
+  'You did not lose today. You discovered what to learn next.',
+  'Great scientists fail many times before they succeed. Try again!',
+  'Courage is trying again, even after a tough round.',
+  'The more you practise, the luckier you get. See you in the next quiz!',
+  'Winning is nice, but learning something new is the real prize.',
+  'Small steps every day lead to big results. Keep going!',
+  'Curiosity brought you here. Let it carry you to the next win.',
+  'Champions are made in the rounds they did not win. Come back stronger!',
+  'Be proud of how far you have come, and excited about how far you can go.'
+];
+function pickQuote(s,m){
+  let h=0; const k=String(s.matchId||'')+':'+m.seat;
+  for(let i=0;i<k.length;i++) h=(h*31+k.charCodeAt(i))>>>0;
+  return QUOTES[h%QUOTES.length];
+}
+function sparksHTML(){
+  const icons=['\u2728','\u2B50','\uD83C\uDF89','\u2728','\uD83C\uDF1F','\u2B50'];
+  return '<div class="sparks" aria-hidden="true">'+Array.from({length:14},(_,i)=>`<i style="--x:${(i*7+3)%96}%;--d:${((i*37)%30)/10}s;--s:${1.3+(i%4)*.45}rem">${icons[i%icons.length]}</i>`).join('')+'</div>';
+}
 function playerView(){
   const s = S(), m = myInfo();
-  let main;
+  let main, celebrate=false;
   if(!s || !s.phase){ main = `<div class="center"><h1 class="big">Please wait</h1><p class="sub">The host has not opened registration yet</p></div>`; }
   else if(!m){
     if(s.phase==='register'){
@@ -504,7 +542,18 @@ function playerView(){
     if(s.phase==='register' || s.phase==='lobby') body = `<h1 class="big" style="font-size:2.6rem">You are in!</h1><p class="sub">Waiting for the quiz to start</p>`;
     else if(s.phase==='final'){
       const max = Math.max(0,...[0,1,2,3,4].filter(i=>pl(i)).map(i=>pl(i).score||0));
-      body = (max>0 && (p.score||0)===max) ? `<div class="trophy">&#127942;</div><h1 class="big">You won!</h1>` : `<h1 class="big">Thank you for playing</h1><p class="sub">Watch the big screen for the winner</p>`;
+      const won = max>0 && (p.score||0)===max;
+      if(won){
+        celebrate = true;
+        const tie = [0,1,2,3,4].filter(i=>pl(i) && (pl(i).score||0)===max).length>1;
+        body = `<div class="celebrate">${sparksHTML()}<div class="trophy bounce">&#127942;</div><h1 class="big shine">You won!</h1>
+          <p class="win-sub">${tie?'It is a tie, you share the win! ':'Congratulations, '}${esc(p.name)}!</p>
+          <div class="scorepill">${p.score||0} points</div></div>`;
+      } else {
+        body = `<h1 class="big" style="font-size:2.6rem">Thank you for playing</h1><p class="sub">You scored ${p.score||0} point${(p.score||0)===1?'':'s'}</p>
+          <div class="quote">&ldquo;${esc(pickQuote(s,m))}&rdquo;<small>Keep going. The next round could be yours!</small></div>
+          <p class="sub" style="font-size:1.1rem">Watch the big screen for the winner</p>`;
+      }
     } else {
       const mine = s.phase==='answering' && s.turn===m.seat;
       const att = isAtt(s,m.seat), buzzed = buzzTs(m.seat)!==undefined;
@@ -527,6 +576,7 @@ function playerView(){
   }
   app.innerHTML = shell(`<div class="pwrap">${main}</div>`, `<span class="dot ${CONNECTED?'on':''}"></span>${CONNECTED?'Connected':'Offline'}`);
   tick();
+  if(celebrate) startConfetti(); else stopConfetti();
 }
 
 /* host PC */
