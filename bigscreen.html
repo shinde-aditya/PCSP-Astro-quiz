@@ -30,7 +30,7 @@ button,select,input{font:inherit;color:inherit}
 .hdr img{width:5rem;height:5rem;object-fit:contain}
 .hdr .ttl{flex:1}
 .hdr .ttl b{display:block;font-size:2.7rem;font-weight:800;line-height:1;letter-spacing:.02em}
-.hdr .ttl span{font-size:1rem;color:var(--muted);font-weight:600}
+.hdr .ttl span{font-size:1.5rem;color:var();font-weight:600}
 .hdr .meta{text-align:right;font-weight:700;font-size:1.2rem;line-height:1.15}
 .hdr .meta small{display:block;font-size:.95rem;color:var(--muted);font-weight:600}
 .dot{display:inline-block;width:.7rem;height:.7rem;border-radius:50%;background:#C9281B;margin-right:.4rem;vertical-align:middle}
@@ -225,7 +225,7 @@ function boot(){
 }
 function shell(inner, meta=''){
   return `<header class="hdr"><img src="${LOGO}" alt="Pimpri Chinchwad Science Park logo">
-    <div class="ttl"><b>Pimpri Chinchwad Science Park Presents</b><span>Astro Quiz</span></div>
+    <div class="ttl"><b>Pimpri Chinchwad Science Park Presents</b><span>Space Quiz Competitioin </span></div>
     <div class="meta">${meta}</div></header><main class="main">${inner}</main>`;
 }
 function landing(){

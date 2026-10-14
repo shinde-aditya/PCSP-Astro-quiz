@@ -31,7 +31,7 @@ button,select,input{font:inherit;color:inherit}
 .hdr img{width:5rem;height:5rem;object-fit:contain}
 .hdr .ttl{flex:1}
 .hdr .ttl b{display:block;font-size:2.7rem;font-weight:800;line-height:1;letter-spacing:.02em}
-.hdr .ttl span{font-size:1rem;color:var(--muted);font-weight:600}
+.hdr .ttl span{font-size:1rem;color:var();font-weight:600}
 .hdr .meta{text-align:right;font-weight:700;font-size:1.2rem;line-height:1.15}
 .hdr .meta small{display:block;font-size:.95rem;color:var(--muted);font-weight:600}
 .dot{display:inline-block;width:.7rem;height:.7rem;border-radius:50%;background:#C9281B;margin-right:.4rem;vertical-align:middle}
@@ -311,7 +311,10 @@ let GROUPS = [
 
 
 /* categories added/edited by the host are remembered in this browser */
-function saveGroups(){ try{ localStorage.setItem('astro_groups', JSON.stringify(GROUPS)); }catch(e){} }
+function saveGroups(){
+  try{ localStorage.setItem('astro_groups', JSON.stringify(GROUPS)); }catch(e){}
+  try{ if(typeof db!=='undefined' && db) db.ref('astrofest/groups').set(JSON.parse(JSON.stringify(GROUPS))); }catch(e){ console.warn('Could not save categories', e); }
+}
 (function(){ try{
   const d=JSON.parse(localStorage.getItem('astro_groups')||'null');
   if(Array.isArray(d)&&d.length&&d.every(g=>g&&g.name&&Array.isArray(g.questions))) GROUPS=d;
@@ -459,6 +462,15 @@ function pinScreen(){
 function startApp(){
   firebase.initializeApp(FIREBASE_CONFIG);
   db = firebase.database(); L = db.ref('astrofest/live'); R = db.ref('astrofest/records');
+  db.ref('astrofest/groups').once('value').then(snap=>{
+    const d = snap.val();
+    if(Array.isArray(d) && d.length){
+      GROUPS = d.map(g=>({name:g.name, questions:(g.questions||[]).map(q=>({q:q.q, options:q.options, answer:q.answer}))}));
+      SELGROUP = 0;
+      try{ localStorage.setItem('astro_groups', JSON.stringify(GROUPS)); }catch(e){}
+    } else { saveGroups(); }
+    render();
+  }).catch(e=>console.warn('Could not load categories from Firebase', e));
   db.ref('.info/serverTimeOffset').on('value',s=>{ offset = s.val()||0; });
   db.ref('.info/connected').on('value',s=>{ CONNECTED = !!s.val(); if(role!=='screen') render(); });
   L.on('value', snap=>{
@@ -476,7 +488,7 @@ function startApp(){
 }
 function shell(inner, meta=''){
   return `<header class="hdr"><img src="${LOGO}" alt="Pimpri Chinchwad Science Park logo">
-    <div class="ttl"><b>Pimpri Chinchwad Science Park Presents</b><span><b>Astro Quiz<b></span></div>
+    <div class="ttl"><b>Pimpri Chinchwad Science Park Presents</b><span><b>Space Quiz Competition<b></span></div>
     <div class="meta">${meta}</div></header><main class="main">${inner}</main>`;
 }
 function landing(){

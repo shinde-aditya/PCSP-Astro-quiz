@@ -29,7 +29,7 @@ button,select,input{font:inherit;color:inherit}
 .hdr img{width:5rem;height:5rem;object-fit:contain}
 .hdr .ttl{flex:1}
 .hdr .ttl b{display:block;font-size:2.7rem;font-weight:800;line-height:1;letter-spacing:.02em}
-.hdr .ttl span{font-size:1rem;color:var(--muted);font-weight:600}
+.hdr .ttl span{font-size:1.5rem;color: var();font-weight:600}
 .hdr .meta{text-align:right;font-weight:700;font-size:1.2rem;line-height:1.15}
 .hdr .meta small{display:block;font-size:.95rem;color:var(--muted);font-weight:600}
 .dot{display:inline-block;width:.7rem;height:.7rem;border-radius:50%;background:#C9281B;margin-right:.4rem;vertical-align:middle}
@@ -221,7 +221,7 @@ function boot(){
 }
 function shell(inner, meta=''){
   return `<header class="hdr"><img src="${LOGO}" alt="Pimpri Chinchwad Science Park logo">
-    <div class="ttl"><b>Pimpri Chinchwad Science Park Presents</b><span>Astro Quiz</span></div>
+    <div class="ttl"><b>Pimpri Chinchwad Science Park Presents</b><span>Space Quiz Competition</span></div>
     <div class="meta">${meta}</div></header><main class="main">${inner}</main>`;
 }
 function landing(){
@@ -507,7 +507,7 @@ const QUOTES = [
   'You did not lose today. You discovered what to learn next.',
   'Great scientists fail many times before they succeed. Try again!',
   'Courage is trying again, even after a tough round.',
-  'The more you practise, the luckier you get. See you in the next quiz!',
+  'The more you practise, the luckier you get.',
   'Winning is nice, but learning something new is the real prize.',
   'Small steps every day lead to big results. Keep going!',
   'Curiosity brought you here. Let it carry you to the next win.',
@@ -551,7 +551,7 @@ function playerView(){
           <div class="scorepill">${p.score||0} points</div></div>`;
       } else {
         body = `<h1 class="big" style="font-size:2.6rem">Thank you for playing</h1><p class="sub">You scored ${p.score||0} point${(p.score||0)===1?'':'s'}</p>
-          <div class="quote">&ldquo;${esc(pickQuote(s,m))}&rdquo;<small>Keep going. The next round could be yours!</small></div>
+          <div class="quote">&ldquo;${esc(pickQuote(s,m))}&rdquo;<small>Keep going.</small></div>
           <p class="sub" style="font-size:1.1rem">Watch the big screen for the winner</p>`;
       }
     } else {
